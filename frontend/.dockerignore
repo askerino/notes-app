@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+tests/
+coverage/
+test-results/
+playwright-report/
+
+.env*
+
+Dockerfile
+.dockerignore

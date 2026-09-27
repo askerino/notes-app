@@ -1,0 +1,356 @@
+@import "@milkdown/crepe/theme/common/style.css";
+@import "@milkdown/crepe/theme/frame.css";
+
+.milkdown {
+  min-height: 22rem;
+
+  /* Milkdown Crepe theme colors and fonts */
+  --crepe-color-background: var(--background);
+  --crepe-color-on-background: var(--foreground);
+  --crepe-color-surface: var(--popover);
+  --crepe-color-surface-low: var(--popover);
+  --crepe-color-on-surface: var(--foreground);
+  --crepe-color-on-surface-variant: var(--muted-foreground);
+  --crepe-color-outline: var(--muted-foreground);
+  --crepe-color-primary: var(--foreground);
+  --crepe-color-secondary: var(--secondary);
+  --crepe-color-on-secondary: var(--secondary-foreground);
+  --crepe-color-inverse: var(--foreground);
+  --crepe-color-on-inverse: var(--background);
+  --crepe-color-inline-code: var(--foreground);
+  --crepe-color-error: var(--destructive);
+  --crepe-color-hover: var(--accent);
+  --crepe-color-selected: var(--muted);
+  --crepe-color-inline-area: var(--muted);
+
+  --crepe-font-title: var(--font-sans);
+  --crepe-font-default: var(--font-sans);
+  --crepe-font-code: var(--font-mono);
+
+  /* CodeMirror syntax highlighting colors (GitHub Light) */
+  --cm-syntax-tag: #116329;
+  --cm-syntax-comment: #6a737d;
+  --cm-syntax-class: #6f42c1;
+  --cm-syntax-variable: #005cc5;
+  --cm-syntax-keyword: #d73a49;
+  --cm-syntax-string: #032f62;
+  --cm-syntax-name: #22863a;
+  --cm-syntax-heading: #24292e;
+  --cm-syntax-deleted: #b31d28;
+  --cm-syntax-deleted-bg: #ffeef0;
+  --cm-syntax-atom: #e36209;
+  --cm-syntax-invalid: #cb2431;
+}
+
+.dark .milkdown {
+  /* Milkdown Crepe theme colors */
+  --crepe-shadow-1: 0 1px 3px rgb(0 0 0 / 45%);
+  --crepe-shadow-2: 0 2px 8px rgb(0 0 0 / 55%);
+
+  /* CodeMirror syntax highlighting colors (GitHub Dark) */
+  --cm-syntax-tag: #7ee787;
+  --cm-syntax-comment: #8b949e;
+  --cm-syntax-class: #d2a8ff;
+  --cm-syntax-variable: #79c0ff;
+  --cm-syntax-keyword: #ff7b72;
+  --cm-syntax-string: #a5d6ff;
+  --cm-syntax-name: #7ee787;
+  --cm-syntax-heading: #d2a8ff;
+  --cm-syntax-deleted: #ffdcd7;
+  --cm-syntax-deleted-bg: #ffeef0;
+  --cm-syntax-atom: #ffab70;
+  --cm-syntax-invalid: #f97583;
+}
+
+.milkdown .ProseMirror {
+  min-height: 22rem;
+  padding: 1rem 1.25rem 6rem;
+  outline: none;
+}
+
+@media (min-width: 40rem) {
+  .milkdown .ProseMirror {
+    padding-inline: 2.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .milkdown .ProseMirror {
+    padding-inline: 6rem;
+  }
+}
+
+.milkdown .ProseMirror h1,
+.milkdown .ProseMirror h2,
+.milkdown .ProseMirror h3,
+.milkdown .ProseMirror h4,
+.milkdown .ProseMirror h5,
+.milkdown .ProseMirror h6 {
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.milkdown .ProseMirror h1 {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  line-height: 1.5;
+}
+
+.milkdown .ProseMirror h2 {
+  margin-top: 1.75rem;
+  font-size: 1.35rem;
+  line-height: 1.5;
+}
+
+.milkdown .ProseMirror h3 {
+  margin-top: 1.6rem;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.milkdown .ProseMirror h4,
+.milkdown .ProseMirror h5,
+.milkdown .ProseMirror h6 {
+  margin-top: 1.5rem;
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 40rem) {
+  .milkdown .ProseMirror h1 {
+    font-size: 1.75rem;
+  }
+
+  .milkdown .ProseMirror h2 {
+    font-size: 1.55rem;
+  }
+
+  .milkdown .ProseMirror h3 {
+    font-size: 1.35rem;
+  }
+
+  .milkdown .ProseMirror h4,
+  .milkdown .ProseMirror h5,
+  .milkdown .ProseMirror h6 {
+    font-size: 1.25rem;
+  }
+}
+
+.milkdown .ProseMirror p {
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.milkdown .ProseMirror p + p {
+  margin-top: 0.65rem;
+}
+
+.milkdown .ProseMirror ul,
+.milkdown .ProseMirror ol {
+  margin: 1rem 0;
+}
+
+.milkdown .ProseMirror .milkdown-list-item-block p {
+  padding: 4px 0;
+  line-height: 1.5;
+}
+
+.milkdown .ProseMirror .milkdown-table-block {
+  margin: 1.5rem 0 1.75rem;
+}
+
+.milkdown .ProseMirror blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+}
+
+.milkdown .ProseMirror hr {
+  margin: 1rem 0;
+}
+
+.milkdown .ProseMirror code {
+  background: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+.milkdown .milkdown-code-block {
+  margin: 1.5rem 0;
+  border: none;
+  border-radius: 0.5rem;
+  overflow: visible;
+}
+
+.milkdown .milkdown-code-block .cm-editor {
+  font-size: 1rem;
+}
+
+.milkdown .milkdown-code-block .cm-line {
+  line-height: 1.5;
+}
+
+.milkdown .milkdown-code-block .cm-gutters,
+.milkdown .milkdown-code-block .cm-foldGutter {
+  display: none !important;
+}
+
+.milkdown .milkdown-code-block .cm-activeLine,
+.milkdown .milkdown-code-block .cm-activeLineGutter {
+  background-color: transparent !important;
+}
+
+.milkdown .milkdown-code-block .cm-scroller {
+  font-family: var(--crepe-font-code);
+}
+
+.milkdown .milkdown-code-block .tools {
+  margin: 0.3rem 0 0.2rem;
+}
+
+.milkdown .milkdown-code-block .tools .language-button {
+  margin: 0;
+}
+
+.milkdown .milkdown-code-block .tools .language-list {
+  height: 370px;
+}
+
+.milkdown .milkdown-code-block .tools .language-list-item,
+.milkdown .milkdown-code-block .tools .tools-button-group {
+  gap: 0;
+}
+
+.milkdown .milkdown-code-block .tools .language-list-item {
+  font-weight: 600;
+}
+
+.milkdown .milkdown-code-block .tools .tools-button-group button {
+  gap: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--crepe-color-surface-low);
+  color: var(--crepe-color-on-surface-variant);
+  font-weight: 600;
+}
+
+.milkdown .milkdown-code-block .tools .tools-button-group button:first-child,
+.milkdown .milkdown-code-block .tools .tools-button-group button:last-child {
+  border-radius: 4px;
+}
+
+.milkdown .milkdown-code-block .tools .tools-button-group button:hover {
+  background: var(--crepe-color-hover);
+}
+
+.milkdown .milkdown-code-block .tools .tools-button-group button.copy-feedback {
+  animation: copy-flash 300ms ease-out;
+}
+
+@keyframes copy-flash {
+  0% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.3);
+  }
+
+  100% {
+    filter: brightness(1);
+  }
+}
+
+.milkdown .milkdown-code-block .tools .tools-button-group svg {
+  display: none;
+}
+
+.milkdown .milkdown-code-block .milkdown-code-block-placeholder {
+  padding: 0;
+  font-size: 1rem;
+}
+
+.milkdown .milkdown-code-block-placeholder code {
+  display: none;
+}
+
+.milkdown .milkdown-code-block-placeholder::after {
+  content: "コードを読み込み中…";
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0 0;
+  background: var(--crepe-color-surface);
+  color: var(--crepe-color-on-surface-variant);
+  font-family: var(--crepe-font-default);
+  font-style: italic;
+}
+
+.milkdown .milkdown-block-handle[data-show="true"] {
+  visibility: hidden;
+  transition: none;
+}
+
+.milkdown .milkdown-block-handle[data-show="true"][style*="left:"] {
+  visibility: visible;
+}
+
+.milkdown:not(:hover) .milkdown-block-handle[data-show="true"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.milkdown .milkdown-slash-menu {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.milkdown .milkdown-slash-menu .tab-group {
+  display: none;
+}
+
+.milkdown .milkdown-slash-menu .menu-groups {
+  padding: 5px 0 8px;
+}
+
+.milkdown .milkdown-slash-menu .menu-groups .menu-group + .menu-group::before {
+  margin: 8px 0 0;
+}
+
+.milkdown .milkdown-slash-menu .menu-groups .menu-group h6 {
+  padding: 12px 12px 6px;
+}
+
+.milkdown .milkdown-slash-menu .menu-groups .menu-group li {
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 0;
+}
+
+.milkdown .milkdown-slash-menu .menu-groups .menu-group li svg {
+  width: 18px;
+  height: 18px;
+}
+
+.milkdown .milkdown-toolbar .toolbar-item {
+  margin: 10px 0;
+}
+
+.milkdown .milkdown-toolbar .toolbar-item:first-child {
+  margin: 10px 0 10px 10px;
+}
+
+.milkdown .milkdown-toolbar .toolbar-item:last-child {
+  margin: 10px 10px 10px 0;
+}
+
+.milkdown .milkdown-toolbar .divider {
+  margin: 15px 10px;
+}
+
+.milkdown .milkdown-link-edit,
+.milkdown .milkdown-link-preview,
+.milkdown .milkdown-latex-inline-edit,
+.milkdown .milkdown-slash-menu,
+.milkdown .milkdown-toolbar {
+  z-index: 50;
+}

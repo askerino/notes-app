@@ -1,0 +1,11 @@
+[*.cs]
+indent_size = 4
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = file_scoped
+
+[tests/**/*.cs]
+# Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
+
+[**/Migrations/*.cs]
+generated_code = true
