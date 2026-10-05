@@ -1,9 +1,11 @@
 import { CircleAlert, FileQuestion, LoaderCircle } from "lucide-react";
+import { useEffect } from "react";
 import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router";
 
 import { StatePanel } from "@/components/common/StatePanel";
 import { BrandHeader } from "@/components/layout/BrandHeader";
 import { Button } from "@/components/ui/button";
+import { logError } from "@/lib/logger";
 
 export function RouteLoadingFallback() {
   return (
@@ -23,6 +25,13 @@ export function RouteErrorFallback() {
 
   const error = useRouteError();
   const isNotFound = isRouteErrorResponse(error) && error.status === 404;
+
+  useEffect(() => {
+    if (!isNotFound) {
+      logError(error);
+    }
+  }, [error, isNotFound]);
+
   const Icon = isNotFound ? FileQuestion : CircleAlert;
 
   return (
