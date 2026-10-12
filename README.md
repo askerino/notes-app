@@ -91,6 +91,7 @@ flowchart LR
 │   │   ├── Data/
 │   │   ├── ExceptionHandling/
 │   │   ├── Features/Notes/
+│   │   ├── Validation/
 │   │   └── Program.cs
 │   ├── tests/NotesApp.Api.Tests/
 │   │   ├── Integration/
@@ -339,7 +340,3 @@ docker compose down -v
 - 認証機能
 - VPSへのデプロイ
 - タグ機能
-
-## ライセンス
-
-[MIT License](LICENSE)
