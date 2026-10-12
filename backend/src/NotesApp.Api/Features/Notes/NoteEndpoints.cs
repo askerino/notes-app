@@ -1,9 +1,7 @@
-using System.Text.Json;
-using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NotesApp.Api.Data;
+using NotesApp.Api.Validation;
 
 namespace NotesApp.Api.Features.Notes;
 
@@ -12,27 +10,29 @@ public static class NoteEndpoints
     public static IEndpointRouteBuilder MapNoteEndpoints(this IEndpointRouteBuilder endpoints)
     {
         RouteGroupBuilder notes = endpoints.MapGroup("/api/notes").WithTags("Notes");
-        notes.MapPost("/", Create).WithName("CreateNote");
-        notes.MapGet("/", Search).WithName("SearchNotes");
+        notes.MapPost("/", Create)
+            .WithName("CreateNote")
+            .ProducesValidationProblem()
+            .AddEndpointFilter<ValidationProblemEndpointFilter<SaveNoteRequest>>();
+        notes.MapGet("/", Search)
+            .WithName("SearchNotes")
+            .ProducesValidationProblem()
+            .AddEndpointFilter<ValidationProblemEndpointFilter<SearchNotesRequest>>();
         notes.MapGet("/{id:guid}", GetById).WithName("GetNote");
-        notes.MapPut("/{id:guid}", Update).WithName("UpdateNote");
+        notes.MapPut("/{id:guid}", Update)
+            .WithName("UpdateNote")
+            .ProducesValidationProblem()
+            .AddEndpointFilter<ValidationProblemEndpointFilter<SaveNoteRequest>>();
         notes.MapDelete("/{id:guid}", Delete).WithName("DeleteNote");
         return endpoints;
     }
 
-    private static async Task<Results<CreatedAtRoute<NoteResponse>, ValidationProblem>> Create(
+    private static async Task<CreatedAtRoute<NoteResponse>> Create(
         SaveNoteRequest request,
         TimeProvider timeProvider,
         AppDbContext dbContext,
-        IValidator<SaveNoteRequest> validator,
         CancellationToken cancellationToken)
     {
-        ValidationResult validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(ToValidationErrors(validation));
-        }
-
         // UUIDv7 breaks ties when UpdatedAt is the same.
         Note note = Note.Create(Guid.CreateVersion7(), request.Title, request.Content, timeProvider.GetUtcNow());
         dbContext.Notes.Add(note);
@@ -40,18 +40,11 @@ public static class NoteEndpoints
         return TypedResults.CreatedAtRoute(ToNoteResponse(note), "GetNote", new { id = note.Id });
     }
 
-    private static async Task<Results<Ok<NotePageResponse>, ValidationProblem>> Search(
+    private static async Task<Ok<NotePageResponse>> Search(
         [AsParameters] SearchNotesRequest request,
         AppDbContext dbContext,
-        IValidator<SearchNotesRequest> validator,
         CancellationToken cancellationToken)
     {
-        ValidationResult validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(ToValidationErrors(validation));
-        }
-
         IQueryable<Note> notes = dbContext.Notes.AsNoTracking();
 
         string? trimmedQuery = request.Query?.Trim();
@@ -91,20 +84,13 @@ public static class NoteEndpoints
         return note is null ? TypedResults.NotFound() : TypedResults.Ok(ToNoteResponse(note));
     }
 
-    private static async Task<Results<Ok<NoteResponse>, ValidationProblem, NotFound>> Update(
+    private static async Task<Results<Ok<NoteResponse>, NotFound>> Update(
         Guid id,
         SaveNoteRequest request,
         TimeProvider timeProvider,
         AppDbContext dbContext,
-        IValidator<SaveNoteRequest> validator,
         CancellationToken cancellationToken)
     {
-        ValidationResult validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(ToValidationErrors(validation));
-        }
-
         Note? note = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id, cancellationToken);
         if (note is null)
         {
@@ -140,14 +126,6 @@ public static class NoteEndpoints
     private static NoteResponse ToNoteResponse(Note note)
     {
         return new(note.Id, note.Title, note.Content, note.CreatedAt, note.UpdatedAt);
-    }
-
-    private static Dictionary<string, string[]> ToValidationErrors(ValidationResult validation)
-    {
-        return validation.Errors.GroupBy(error =>
-            JsonNamingPolicy.CamelCase.ConvertName(error.PropertyName))
-            .ToDictionary(group => group.Key, group => group.Select(error => error.ErrorMessage)
-            .ToArray());
     }
 
     // Escape LIKE wildcards; backslash must be escaped first.
