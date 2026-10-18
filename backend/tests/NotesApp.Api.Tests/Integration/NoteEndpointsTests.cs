@@ -55,8 +55,6 @@ public abstract class NoteEndpointsTests(ApiWebApplicationFactory factory) : IAs
         return note;
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class Create(ApiWebApplicationFactory factory) : NoteEndpointsTests(factory)
     {
         [Fact]
@@ -105,8 +103,6 @@ public abstract class NoteEndpointsTests(ApiWebApplicationFactory factory) : IAs
         }
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class Search(ApiWebApplicationFactory factory) : NoteEndpointsTests(factory)
     {
         [Fact]
@@ -225,8 +221,6 @@ public abstract class NoteEndpointsTests(ApiWebApplicationFactory factory) : IAs
         };
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class GetById(ApiWebApplicationFactory factory) : NoteEndpointsTests(factory)
     {
         [Fact]
@@ -255,8 +249,6 @@ public abstract class NoteEndpointsTests(ApiWebApplicationFactory factory) : IAs
         }
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class Update(ApiWebApplicationFactory factory) : NoteEndpointsTests(factory)
     {
         [Fact]
@@ -287,8 +279,6 @@ public abstract class NoteEndpointsTests(ApiWebApplicationFactory factory) : IAs
         }
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class Delete(ApiWebApplicationFactory factory) : NoteEndpointsTests(factory)
     {
         [Fact]
@@ -313,8 +303,6 @@ public abstract class NoteEndpointsTests(ApiWebApplicationFactory factory) : IAs
         }
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class Misc(ApiWebApplicationFactory factory) : NoteEndpointsTests(factory)
     {
         [Fact]
