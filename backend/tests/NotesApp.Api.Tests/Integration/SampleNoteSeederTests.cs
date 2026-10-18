@@ -27,8 +27,6 @@ public abstract class SampleNoteSeederTests(ApiWebApplicationFactory factory) : 
         return ValueTask.CompletedTask;
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class Seed(ApiWebApplicationFactory factory) : SampleNoteSeederTests(factory)
     {
         [Fact]
@@ -62,8 +60,6 @@ public abstract class SampleNoteSeederTests(ApiWebApplicationFactory factory) : 
         }
     }
 
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class SeedAsync(ApiWebApplicationFactory factory) : SampleNoteSeederTests(factory)
     {
         [Fact]
@@ -98,8 +94,6 @@ public abstract class SampleNoteSeederTests(ApiWebApplicationFactory factory) : 
     }
 
     // Starts a separate app instance so that its startup MigrateAsync runs the seeding registered in Program.cs.
-    [Trait("Category", "Integration")]
-    [Collection(IntegrationCollectionDefinition.Name)]
     public sealed class SeedSampleData(ApiWebApplicationFactory factory) : SampleNoteSeederTests(factory)
     {
         [Fact]
