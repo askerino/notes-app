@@ -122,7 +122,7 @@ export function NoteEditor(props: NoteEditorProps) {
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+      <div className="scrollbar-modern min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         {/* Title */}
         <div className="mx-auto w-full max-w-5xl px-5 pt-7 sm:px-10 sm:pt-14 lg:px-24">
           <textarea
@@ -173,7 +173,7 @@ export function NoteEditor(props: NoteEditorProps) {
 export function NoteEditorSkeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn("overflow-y-auto", className)}
+      className={cn("scrollbar-modern overflow-y-auto", className)}
       role="status"
       aria-label="エディターを読み込み中"
     >

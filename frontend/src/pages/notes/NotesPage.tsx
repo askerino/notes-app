@@ -150,7 +150,7 @@ export function NotesPage() {
         </ResizablePanelGroup>
       ) : (
         <div className="grid h-full">
-          <div className={cn("min-h-0 min-w-0 border-r", isNoteEditorVisible && "hidden")}>
+          <div className={cn("min-h-0 min-w-0", isNoteEditorVisible && "hidden")}>
             {sidebarContent}
           </div>
           <section className={cn("relative min-h-0 min-w-0", !isNoteEditorVisible && "hidden")}>
