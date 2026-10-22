@@ -140,12 +140,6 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-body {
-  min-width: 20rem;
-  min-height: 100vh;
-  margin: 0;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -155,6 +149,9 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+
+    min-width: 20rem;
+    min-height: 100dvh;
   }
 
   @supports not selector(::-webkit-scrollbar) {

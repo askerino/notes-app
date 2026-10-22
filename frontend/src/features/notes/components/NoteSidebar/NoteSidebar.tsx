@@ -151,7 +151,7 @@ export function NoteSidebar({ ref, ...props }: NoteSidebarProps) {
                 <li key={note.id}>
                   <button
                     className={cn(
-                      "hover:bg-muted/80 focus-visible:bg-muted focus-visible:ring-brand/50 dark:hover:bg-muted/50 w-full cursor-pointer rounded-lg px-3 py-2 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                      "hover:bg-muted/80 focus-visible:bg-muted focus-visible:ring-brand/50 dark:hover:bg-muted/50 w-full cursor-pointer rounded-lg px-3 py-2 text-left transition-colors outline-none focus-visible:ring-1 focus-visible:ring-inset",
                       note.id === selectedNoteId &&
                         "bg-brand/10 hover:bg-brand/15 dark:bg-brand/15 dark:hover:bg-brand/20",
                     )}
