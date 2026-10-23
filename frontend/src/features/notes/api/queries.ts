@@ -25,7 +25,7 @@ export function useNotes(rawQuery: string, delay = 300) {
     queryKey: noteKeys.list(debouncedQuery),
     initialPageParam: 0,
     queryFn: ({ pageParam }) => api.list(debouncedQuery, pageParam),
-    getNextPageParam: (page) => (page.nextOffset === null ? undefined : Number(page.nextOffset)),
+    getNextPageParam: (page) => page.nextOffset ?? undefined,
     select: (data) => data.pages.flatMap((page) => page.items),
   });
 }

@@ -4,8 +4,8 @@ namespace NotesApp.Api.Features.Notes;
 
 public sealed record SearchNotesRequest(
     [FromQuery(Name = "q")] string? Query,
-    int Offset = 0,
-    int Limit = 20);
+    [FromQuery(Name = "offset")] int Offset = 0,
+    [FromQuery(Name = "limit")] int Limit = 20);
 
 public sealed record NoteSummaryResponse(
     Guid Id,
