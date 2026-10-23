@@ -44,7 +44,7 @@ export interface components {
             type?: null | string;
             title?: null | string;
             /** Format: int32 */
-            status?: null | number | string;
+            status?: null | number;
             detail?: null | string;
             instance?: null | string;
             errors?: {
@@ -54,7 +54,7 @@ export interface components {
         NotePageResponse: {
             items: components["schemas"]["NoteSummaryResponse"][];
             /** Format: int32 */
-            nextOffset: null | number | string;
+            nextOffset: null | number;
         };
         NoteResponse: {
             /** Format: uuid */
@@ -88,8 +88,8 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string;
-                Offset?: number | string;
-                Limit?: number | string;
+                offset?: number;
+                limit?: number;
             };
             header?: never;
             path?: never;

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
 using DotNetEnv;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -52,6 +53,10 @@ builder.Services.AddProblemDetails(options => options
         });
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Disable reading numbers from strings so OpenAPI shows plain numbers.
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
 
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>("postgresql");
