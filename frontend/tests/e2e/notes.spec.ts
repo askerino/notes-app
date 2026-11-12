@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { type Page, test as base, expect } from "@playwright/test";
+import { type Locator, type Page, test as base, expect } from "@playwright/test";
 
 // Generates a unique title (e.g., "e2e-a1b2c3d4-test-note" for uniqueTitle("test-note")).
 function uniqueTitle(label: string) {
@@ -129,6 +129,163 @@ test.describe("markdown", () => {
     await page.reload();
     await expect(editor.getByRole("heading", { name: "見出し1", level: 1 })).toBeVisible();
     await expect(editor.getByRole("listitem")).toContainText("箇条書き");
+  });
+});
+
+test.describe("keyboard navigation", () => {
+  async function clickLineStart(locator: Locator) {
+    const box = await locator.boundingBox();
+    if (!box) {
+      throw new Error("The element to click is not visible.");
+    }
+    await locator.click({ position: { x: 1, y: box.height / 2 } });
+  }
+
+  // Retry until ProseMirror's asynchronous selection update takes effect.
+  async function pressKeyUntilFocused(page: Page, key: string, target: Locator) {
+    await expect(async () => {
+      await page.keyboard.press(key);
+      await expect(target).toBeFocused({ timeout: 200 });
+    }).toPass({ timeout: 5_000 });
+  }
+
+  test("moves the caret from the end of the title to the start of the body", async ({
+    page,
+    seedNote,
+  }) => {
+    const note = await seedNote("nav-to-body", "本文");
+    await page.goto(`/notes/${note.id}`);
+
+    const title = page.getByLabel("タイトル");
+    const editor = page.getByLabel("本文");
+    await expect(editor).toContainText("本文");
+
+    // ArrowDown
+    await title.click();
+    await page.keyboard.press("Home");
+    await page.keyboard.press("ArrowDown");
+    await expect(title).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(editor).toBeFocused();
+
+    // ArrowRight
+    await title.click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("ArrowRight");
+    await expect(editor).toBeFocused();
+    await page.keyboard.type("先頭");
+    await expect(editor.getByRole("paragraph")).toHaveText(["先頭本文"]);
+    await expect(title).toHaveValue(note.title);
+  });
+
+  test("inserts a paragraph at the start of the body when Enter is pressed at the end of the title", async ({
+    page,
+    seedNote,
+  }) => {
+    const note = await seedNote("nav-enter", "本文");
+    await page.goto(`/notes/${note.id}`);
+
+    const title = page.getByLabel("タイトル");
+    const editor = page.getByLabel("本文");
+    const paragraphs = editor.getByRole("paragraph");
+    await expect(editor).toContainText("本文");
+
+    // Enter
+    await title.click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await expect(editor).toBeFocused();
+    await expect(paragraphs).toHaveText(["", "本文"]);
+
+    // Enter again
+    await title.click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await expect(editor).toBeFocused();
+    await expect(paragraphs).toHaveText(["", "本文"]);
+
+    await page.keyboard.type("先頭");
+    await expect(paragraphs).toHaveText(["先頭", "本文"]);
+    await expect(title).toHaveValue(note.title);
+  });
+
+  test("moves the caret from the start of the body to the end of the title", async ({
+    page,
+    seedNote,
+  }) => {
+    const note = await seedNote("nav-to-title", "1行目\n\n2行目");
+    await page.goto(`/notes/${note.id}`);
+
+    const title = page.getByLabel("タイトル");
+    const editor = page.getByLabel("本文");
+    const paragraphs = editor.getByRole("paragraph");
+    await expect(editor).toContainText("2行目");
+
+    // ArrowUp on the second line
+    await clickLineStart(paragraphs.nth(1));
+    await page.keyboard.type("下");
+    await expect(paragraphs.nth(1)).toHaveText("下2行目");
+    await page.keyboard.press("ArrowUp");
+    await expect(editor).toBeFocused();
+
+    // ArrowUp
+    await clickLineStart(paragraphs.first());
+    await pressKeyUntilFocused(page, "ArrowUp", title);
+    await page.keyboard.type("上");
+    await expect(title).toHaveValue(`${note.title}上`);
+
+    // ArrowLeft
+    await clickLineStart(paragraphs.first());
+    await pressKeyUntilFocused(page, "ArrowLeft", title);
+  });
+
+  test("skips a leading code block when moving from the end of the title", async ({
+    page,
+    seedNote,
+  }) => {
+    const note = await seedNote("nav-code-block", "```js\nconst a = 1;\n```\n\n本文");
+    await page.goto(`/notes/${note.id}`);
+
+    const title = page.getByLabel("タイトル");
+    const editor = page.getByLabel("本文");
+    const paragraphs = editor.getByRole("paragraph");
+    const codeBlocks = editor.getByRole("textbox");
+    await expect(editor).toContainText("本文");
+
+    // ArrowDown
+    await title.click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("ArrowDown");
+    await expect(editor).toBeFocused();
+    await page.keyboard.type("先頭");
+    await expect(paragraphs).toHaveText(["先頭本文"]);
+
+    // Enter
+    await title.click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await expect(editor).toBeFocused();
+    await page.keyboard.type("上");
+    await expect(paragraphs).toHaveText(["上", "先頭本文"]);
+    await expect(codeBlocks).toHaveCount(1);
+  });
+
+  test("moves the caret from the end of the title into a body that has only a code block", async ({
+    page,
+    seedNote,
+  }) => {
+    const note = await seedNote("nav-code-only", "```js\nconst a = 1;\n```");
+    await page.goto(`/notes/${note.id}`);
+
+    const title = page.getByLabel("タイトル");
+    const editor = page.getByLabel("本文");
+    const codeBlock = editor.getByRole("textbox");
+    await expect(codeBlock).toHaveCount(1);
+
+    await title.click();
+    await page.keyboard.press("End");
+    await page.keyboard.press("ArrowDown");
+    await expect(codeBlock).toBeFocused();
   });
 });
 
