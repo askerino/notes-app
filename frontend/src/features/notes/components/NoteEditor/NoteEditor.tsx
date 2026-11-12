@@ -10,7 +10,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { hasModifierKey, isImeComposing } from "@/lib/keyboard";
 import { cn } from "@/lib/utils";
+
+import type { MarkdownEditorRef } from "./MarkdownEditor/MarkdownEditor";
 
 const MarkdownEditor = lazy(() =>
   import("./MarkdownEditor/MarkdownEditor").then((module) => ({
@@ -39,6 +42,7 @@ type NoteEditorProps = {
 
 export function NoteEditor(props: NoteEditorProps) {
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<MarkdownEditorRef>(null);
 
   useLayoutEffect(() => {
     const textarea = titleRef.current;
@@ -49,13 +53,37 @@ export function NoteEditor(props: NoteEditorProps) {
   }, [props.title.value]);
 
   function handleTitleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+    if (isImeComposing(event.nativeEvent)) {
+      return;
+    }
+
+    const { selectionStart, selectionEnd, value } = event.currentTarget;
+    const canNavigateToContent =
+      selectionStart === value.length && selectionEnd === value.length && !hasModifierKey(event);
+
+    if (event.key === "Enter") {
       event.preventDefault();
+      if (canNavigateToContent) {
+        contentRef.current?.insertParagraphAtStart();
+      }
+    } else if ((event.key === "ArrowDown" || event.key === "ArrowRight") && canNavigateToContent) {
+      // Prevent the key event from being handled again after focus moves to the content.
+      event.preventDefault();
+      contentRef.current?.focusAtStart();
     }
   }
 
   function handleTitleChange(event: ChangeEvent<HTMLTextAreaElement>) {
     props.title.onChange(event.currentTarget.value.replace(/\r?\n/g, " "));
+  }
+
+  function focusTitleAtEnd() {
+    const textarea = titleRef.current;
+    if (!textarea) {
+      return;
+    }
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   }
 
   return (
@@ -157,7 +185,12 @@ export function NoteEditor(props: NoteEditorProps) {
               </div>
             }
           >
-            <MarkdownEditor value={props.content.value} onChange={props.content.onChange} />
+            <MarkdownEditor
+              ref={contentRef}
+              value={props.content.value}
+              onChange={props.content.onChange}
+              onNavigateToTitle={focusTitleAtEnd}
+            />
           </Suspense>
           {props.content.error && (
             <p className="text-destructive px-5 pb-6 text-sm sm:px-10 lg:px-24" role="alert">

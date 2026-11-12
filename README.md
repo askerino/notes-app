@@ -336,7 +336,6 @@ docker compose down -v
 
 ## 実装予定
 
-- タイトルと本文をまたぐキーボード操作（矢印キー、Enter、Backspace、Deleteなど）
 - 認証機能
 - VPSへのデプロイ
 - タグ機能

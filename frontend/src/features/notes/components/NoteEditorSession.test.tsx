@@ -1,11 +1,12 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Draft } from "@/features/notes/schemas/draftSchema";
 import type { Note } from "@/features/notes/types/note";
 import { createNote, meetingNote } from "@/test/fixtures/notes";
+import { markdownEditorRef } from "@/test/mocks/markdownEditorRef";
 import { server } from "@/test/mocks/server";
 import { renderWithProviders, sleep } from "@/test/test-utils";
 
@@ -81,6 +82,68 @@ describe("NoteEditorSession", () => {
       await user.paste("タイトル1\nタイトル2\r\nタイトル3");
 
       expect(title).toHaveValue("タイトル1 タイトル2 タイトル3");
+    });
+
+    describe("keyboard navigation", () => {
+      beforeEach(() => {
+        markdownEditorRef.focusAtStart.mockClear();
+        markdownEditorRef.insertParagraphAtStart.mockClear();
+      });
+
+      async function setup() {
+        const user = userEvent.setup();
+        renderNoteEditorSession();
+        await screen.findByRole("textbox", { name: "本文" });
+        const title = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "タイトル" });
+        await user.click(title);
+        return { user, title };
+      }
+
+      it("moves to the start of the content with ArrowDown or ArrowRight at the end", async () => {
+        const { user } = await setup();
+
+        await user.keyboard("{ArrowDown}");
+        await user.keyboard("{ArrowRight}");
+
+        expect(markdownEditorRef.focusAtStart).toHaveBeenCalledTimes(2);
+      });
+
+      it("inserts a paragraph at the start of the content with Enter at the end", async () => {
+        const { user } = await setup();
+
+        await user.keyboard("{Enter}");
+
+        expect(markdownEditorRef.insertParagraphAtStart).toHaveBeenCalledOnce();
+      });
+
+      it("stays in the title when the caret is not at the end", async () => {
+        const { user, title } = await setup();
+
+        title.setSelectionRange(0, 0);
+        await user.keyboard("{Enter}{ArrowRight}");
+
+        expect(markdownEditorRef.insertParagraphAtStart).not.toHaveBeenCalled();
+        expect(markdownEditorRef.focusAtStart).not.toHaveBeenCalled();
+      });
+
+      it("stays in the title when a modifier key is pressed", async () => {
+        const { user } = await setup();
+
+        await user.keyboard("{Shift>}{Enter}{ArrowDown}{ArrowRight}{/Shift}");
+
+        expect(markdownEditorRef.insertParagraphAtStart).not.toHaveBeenCalled();
+        expect(markdownEditorRef.focusAtStart).not.toHaveBeenCalled();
+      });
+
+      it("stays in the title while composing with an IME", async () => {
+        const { title } = await setup();
+
+        fireEvent.keyDown(title, { key: "Enter", isComposing: true });
+        fireEvent.keyDown(title, { key: "ArrowDown", isComposing: true });
+
+        expect(markdownEditorRef.insertParagraphAtStart).not.toHaveBeenCalled();
+        expect(markdownEditorRef.focusAtStart).not.toHaveBeenCalled();
+      });
     });
   });
 

@@ -1,13 +1,16 @@
-type MarkdownEditorProps = {
-  value: string;
-  onChange: (value: string) => void;
-};
+import { useImperativeHandle } from "react";
 
-export function MarkdownEditor(props: MarkdownEditorProps) {
+import type { MarkdownEditorProps } from "@/features/notes/components/NoteEditor/MarkdownEditor/MarkdownEditor";
+
+import { markdownEditorRef } from "./markdownEditorRef";
+
+export function MarkdownEditor({ ref, value, onChange }: MarkdownEditorProps) {
+  useImperativeHandle(ref, () => markdownEditorRef, []);
+
   return (
     <textarea
-      value={props.value}
-      onChange={(event) => props.onChange(event.currentTarget.value)}
+      value={value}
+      onChange={(event) => onChange(event.currentTarget.value)}
       aria-label="本文"
     />
   );

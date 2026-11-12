@@ -1,12 +1,17 @@
 import { Crepe } from "@milkdown/crepe";
 import { codeBlockConfig } from "@milkdown/kit/component/code-block";
-import { editorViewOptionsCtx } from "@milkdown/kit/core";
+import { editorViewCtx, editorViewOptionsCtx } from "@milkdown/kit/core";
 import { type Ctx } from "@milkdown/kit/ctx";
+import { Selection, TextSelection, type Transaction } from "@milkdown/kit/prose/state";
+import type { EditorView } from "@milkdown/kit/prose/view";
 import { replaceAll } from "@milkdown/kit/utils";
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
-import { useEffect, useRef } from "react";
+import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
+
+import { hasModifierKey, isImeComposing } from "@/lib/keyboard";
 
 import "./MarkdownEditor.css";
+import { ensureLeadingEmptyParagraph, findFirstTextPos, isCaretAtDocStart } from "./caret";
 import { codeMirrorTheme } from "./codeMirrorTheme";
 
 // Temporarily open the block in edit mode after $$ + Enter.
@@ -23,19 +28,39 @@ function openNextMathBlockForEditing(ctx: Ctx) {
   });
 }
 
-type MarkdownEditorProps = {
-  value: string;
-  onChange: (value: string) => void;
+function isNavigateToTitleKey(view: EditorView, event: KeyboardEvent) {
+  return (
+    // The slash menu calls preventDefault on the keys it handles.
+    !event.defaultPrevented &&
+    !isImeComposing(event) &&
+    !hasModifierKey(event) &&
+    (event.key === "ArrowUp" || event.key === "ArrowLeft") &&
+    isCaretAtDocStart(view.state)
+  );
+}
+
+export type MarkdownEditorRef = {
+  focusAtStart: () => void;
+  insertParagraphAtStart: () => void;
 };
 
-function EditorInstance({ value, onChange }: MarkdownEditorProps) {
+export type MarkdownEditorProps = {
+  ref?: Ref<MarkdownEditorRef>;
+  value: string;
+  onChange: (value: string) => void;
+  onNavigateToTitle: () => void;
+};
+
+function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEditorProps) {
   const lastValueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const onNavigateToTitleRef = useRef(onNavigateToTitle);
   const ignoreNextMarkdownUpdateRef = useRef(false);
 
   useEffect(() => {
     onChangeRef.current = onChange;
-  }, [onChange]);
+    onNavigateToTitleRef.current = onNavigateToTitle;
+  }, [onChange, onNavigateToTitle]);
 
   // Subtle feedback when copying code: briefly brighten the copy button.
   useEffect(() => {
@@ -129,12 +154,14 @@ function EditorInstance({ value, onChange }: MarkdownEditorProps) {
           "aria-live": "off",
         },
         handleKeyDown: (view, event) => {
+          if (isNavigateToTitleKey(view, event)) {
+            onNavigateToTitleRef.current();
+            return true;
+          }
           if (
             event.key === "Enter" &&
-            !event.ctrlKey &&
-            !event.metaKey &&
-            !event.shiftKey &&
-            !event.altKey &&
+            !isImeComposing(event) &&
+            !hasModifierKey(event) &&
             view.state.selection.$from.parent.textContent === "$$"
           ) {
             openNextMathBlockForEditing(ctx);
@@ -168,13 +195,36 @@ function EditorInstance({ value, onChange }: MarkdownEditorProps) {
     get()?.action(replaceAll(value));
   }, [get, loading, value]);
 
+  useImperativeHandle(ref, () => {
+    function focusWith(update: (tr: Transaction) => Transaction) {
+      const view = loading ? undefined : get()?.action((ctx) => ctx.get(editorViewCtx));
+      if (!view) {
+        return;
+      }
+      view.dispatch(update(view.state.tr).scrollIntoView());
+      view.focus();
+    }
+    return {
+      focusAtStart: () =>
+        focusWith((tr) => {
+          const pos = findFirstTextPos(tr.doc);
+          return pos === null ? tr : tr.setSelection(TextSelection.create(tr.doc, pos));
+        }),
+      insertParagraphAtStart: () =>
+        focusWith((tr) => {
+          const updated = ensureLeadingEmptyParagraph(tr);
+          return updated.setSelection(Selection.atStart(updated.doc));
+        }),
+    };
+  }, [get, loading]);
+
   return <Milkdown />;
 }
 
-export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
+export function MarkdownEditor(props: MarkdownEditorProps) {
   return (
     <MilkdownProvider>
-      <EditorInstance value={value} onChange={onChange} />
+      <EditorInstance {...props} />
     </MilkdownProvider>
   );
 }
