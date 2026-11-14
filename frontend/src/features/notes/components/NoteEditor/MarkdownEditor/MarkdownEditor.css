@@ -285,6 +285,12 @@
   font-style: italic;
 }
 
+/* Keep the handle inside the editor until it is first positioned, so it doesn't extend the scroll height. */
+.milkdown .milkdown-block-handle {
+  top: 0;
+  left: 0;
+}
+
 .milkdown .milkdown-block-handle[data-show="true"] {
   visibility: hidden;
   transition: none;
