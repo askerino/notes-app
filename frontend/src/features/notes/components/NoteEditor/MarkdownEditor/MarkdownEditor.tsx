@@ -1,7 +1,12 @@
 import { Crepe } from "@milkdown/crepe";
 import { codeBlockConfig } from "@milkdown/kit/component/code-block";
-import { editorViewCtx, editorViewOptionsCtx } from "@milkdown/kit/core";
+import { commandsCtx, editorViewCtx, editorViewOptionsCtx } from "@milkdown/kit/core";
 import { type Ctx } from "@milkdown/kit/ctx";
+import {
+  clearTextInCurrentBlockCommand,
+  codeBlockSchema,
+  setBlockTypeCommand,
+} from "@milkdown/kit/preset/commonmark";
 import { Selection, TextSelection, type Transaction } from "@milkdown/kit/prose/state";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import { replaceAll } from "@milkdown/kit/utils";
@@ -14,7 +19,17 @@ import "./MarkdownEditor.css";
 import { ensureLeadingEmptyParagraph, findFirstTextPos, isCaretAtDocStart } from "./caret";
 import { codeMirrorTheme } from "./codeMirrorTheme";
 
-// Temporarily open the block in edit mode after $$ + Enter.
+// Copied from Crepe's built-in math item, since Crepe doesn't export its icons.
+const functionsIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+    <path
+      fill="currentColor"
+      d="M7 19v-.808L13.096 12L7 5.808V5h10v1.25H9.102L14.727 12l-5.625 5.77H17V19z"
+    />
+  </svg>
+`;
+
+// Temporarily open the next math block in edit mode (used by $$ + Enter and the slash menu).
 function openNextMathBlockForEditing(ctx: Ctx) {
   const config = ctx.get(codeBlockConfig.key);
   const originalPreviewOnlyByDefault = config.previewOnlyByDefault;
@@ -114,8 +129,25 @@ function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEdi
             label: "その他",
             image: null,
             table: { label: "表" },
-            math: { label: "数式" },
+            // Replaced by the custom item in buildMenu below.
+            math: null,
             codeBlock: { label: "コード" },
+          },
+          buildMenu: (builder) => {
+            // Crepe's built-in math item, but opens the block in edit mode and keeps the caret in it.
+            builder.getGroup("advanced").addItem("math", {
+              label: "数式",
+              icon: functionsIcon,
+              onRun: (ctx) => {
+                openNextMathBlockForEditing(ctx);
+                const commands = ctx.get(commandsCtx);
+                commands.call(clearTextInCurrentBlockCommand.key);
+                commands.call(setBlockTypeCommand.key, {
+                  nodeType: codeBlockSchema.type(ctx),
+                  attrs: { language: "LaTeX" },
+                });
+              },
+            });
           },
         },
         [Crepe.Feature.Toolbar]: {
