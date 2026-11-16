@@ -218,6 +218,33 @@ function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEdi
     return crepe;
   });
 
+  // Crepe shows the slash menu from the block handle before positioning it.
+  // The CSS hides the menu until its position is set, so clear the previous position while it is closed.
+  // Also watch style changes, since the position can be set after the menu closes.
+  useEffect(() => {
+    const root = loading
+      ? undefined
+      : get()?.action((ctx) => ctx.get(editorViewCtx)).dom.parentElement;
+    if (!root) {
+      return;
+    }
+    const observer = new MutationObserver((mutations) => {
+      for (const { target } of mutations) {
+        if (
+          target instanceof HTMLElement &&
+          target.classList.contains("milkdown-slash-menu") &&
+          target.dataset["show"] === "false" &&
+          target.style.left !== ""
+        ) {
+          target.style.removeProperty("top");
+          target.style.removeProperty("left");
+        }
+      }
+    });
+    observer.observe(root, { subtree: true, attributeFilter: ["data-show", "style"] });
+    return () => observer.disconnect();
+  }, [get, loading]);
+
   useEffect(() => {
     if (loading || value === lastValueRef.current) {
       return;

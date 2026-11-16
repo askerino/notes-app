@@ -316,6 +316,17 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Keep the slash menu inside the editor until it is positioned, so it doesn't extend the scroll height. */
+.milkdown .milkdown-slash-menu {
+  top: 0;
+  left: 0;
+}
+
+/* Keep the slash menu hidden until it is positioned. */
+.milkdown .milkdown-slash-menu[data-show="true"]:not([style*="left:"]) {
+  visibility: hidden;
+}
+
 .milkdown .milkdown-slash-menu .tab-group {
   display: none;
 }
