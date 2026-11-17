@@ -245,23 +245,30 @@ function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEdi
     return () => observer.disconnect();
   }, [get, loading]);
 
-  // Crepe only hides the slash menu when the editor state changes,
-  // so clicking the editor's padding or outside the editor leaves it open.
-  // Crepe doesn't export menuAPI, so get it by its name "menuAPICtx".
+  // Crepe only hides the slash menu and the toolbar when the editor state changes,
+  // so clicking the editor's padding or outside the editor leaves them open.
   useEffect(() => {
     const editor = loading ? undefined : get();
     const root = editor?.action((ctx) => ctx.get(editorViewCtx)).dom.parentElement;
     if (!editor || !root) {
       return;
     }
+    const findVisibleElementOutside = (selector: string, target: Node) => {
+      const element = root.querySelector<HTMLElement>(selector);
+      return element?.dataset["show"] === "true" && !element.contains(target) ? element : undefined;
+    };
     const handlePointerDown = (event: PointerEvent) => {
-      const menu = root.querySelector<HTMLElement>(".milkdown-slash-menu");
-      if (
-        menu?.dataset["show"] === "true" &&
-        event.target instanceof Node &&
-        !menu.contains(event.target)
-      ) {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+      if (findVisibleElementOutside(".milkdown-slash-menu", event.target)) {
+        // Crepe doesn't export menuAPI, so access it by its name, "menuAPICtx".
         editor.action((ctx) => ctx.get<{ hide: () => void }, "menuAPICtx">("menuAPICtx").hide());
+      }
+      const toolbar = findVisibleElementOutside(".milkdown-toolbar", event.target);
+      if (toolbar) {
+        // Crepe provides no public API to hide the toolbar, but its visibility is controlled by data-show.
+        toolbar.dataset["show"] = "false";
       }
     };
     document.addEventListener("pointerdown", handlePointerDown, { capture: true });
