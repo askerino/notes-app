@@ -245,6 +245,29 @@ function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEdi
     return () => observer.disconnect();
   }, [get, loading]);
 
+  // Crepe only hides the slash menu when the editor state changes,
+  // so clicking the editor's padding or outside the editor leaves it open.
+  // Crepe doesn't export menuAPI, so get it by its name "menuAPICtx".
+  useEffect(() => {
+    const editor = loading ? undefined : get();
+    const root = editor?.action((ctx) => ctx.get(editorViewCtx)).dom.parentElement;
+    if (!editor || !root) {
+      return;
+    }
+    const handlePointerDown = (event: PointerEvent) => {
+      const menu = root.querySelector<HTMLElement>(".milkdown-slash-menu");
+      if (
+        menu?.dataset["show"] === "true" &&
+        event.target instanceof Node &&
+        !menu.contains(event.target)
+      ) {
+        editor.action((ctx) => ctx.get<{ hide: () => void }, "menuAPICtx">("menuAPICtx").hide());
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown, { capture: true });
+    return () => document.removeEventListener("pointerdown", handlePointerDown, { capture: true });
+  }, [get, loading]);
+
   useEffect(() => {
     if (loading || value === lastValueRef.current) {
       return;
