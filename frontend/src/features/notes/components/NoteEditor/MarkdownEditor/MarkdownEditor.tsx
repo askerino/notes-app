@@ -247,12 +247,11 @@ function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEdi
 
   // Crepe only hides the slash menu when the editor state changes,
   // so clicking the editor's padding or outside the editor leaves it open.
-  // Crepe doesn't expose a way to hide it, so send the Escape key the menu handles instead.
+  // Crepe doesn't export menuAPI, so get it by its name "menuAPICtx".
   useEffect(() => {
-    const root = loading
-      ? undefined
-      : get()?.action((ctx) => ctx.get(editorViewCtx)).dom.parentElement;
-    if (!root) {
+    const editor = loading ? undefined : get();
+    const root = editor?.action((ctx) => ctx.get(editorViewCtx)).dom.parentElement;
+    if (!editor || !root) {
       return;
     }
     const handlePointerDown = (event: PointerEvent) => {
@@ -262,7 +261,7 @@ function EditorInstance({ ref, value, onChange, onNavigateToTitle }: MarkdownEdi
         event.target instanceof Node &&
         !menu.contains(event.target)
       ) {
-        window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+        editor.action((ctx) => ctx.get<{ hide: () => void }, "menuAPICtx">("menuAPICtx").hide());
       }
     };
     document.addEventListener("pointerdown", handlePointerDown, { capture: true });
